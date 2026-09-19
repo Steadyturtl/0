@@ -463,26 +463,31 @@
   .rank-item .top3 { color: #fbbf24; font-weight: 700; }
   .clear-rank-btn {
     margin-top: 12px;
-    background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,255,255,0.15);
-    color: #94a3b8;
-    padding: 8px 12px;
-    border-radius: 8px;
+    width: 100%;
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    color: #fca5a5;
+    padding: 10px 12px;
+    border-radius: 10px;
     cursor: pointer;
-    font-size: 13px;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .clear-rank-btn:hover {
+    background: rgba(239, 68, 68, 0.25);
   }
 
   /* 二维码入口 */
   .qr-entry {
     text-align: center;
     margin-top: 30px;
-    padding: 20px;
+    padding: 24px 20px;
     background: rgba(255,255,255,0.05);
     border-radius: 16px;
   }
   .qr-entry p {
     font-weight: 700;
-    margin-bottom: 6px;
+    margin-bottom: 12px;
     font-size: 15px;
   }
   .qr-entry p .zh {
@@ -492,18 +497,33 @@
     display: block;
     margin-top: 2px;
   }
-  .qr-entry img {
-    width: 180px;
+  .qr-wrap {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+  }
+  .qr-item {
+    text-align: center;
+  }
+  .qr-item img {
+    width: 160px;
     border-radius: 12px;
-    margin: 10px 0;
     background: white;
-    padding: 8px;
+    padding: 6px;
+    margin-bottom: 6px;
+  }
+  .qr-item .qr-label {
+    font-size: 13px;
+    color: #94a3b8;
   }
 
   @media (max-width: 640px) {
     .home-cards { grid-template-columns: 1fr; }
     .stats-container { grid-template-columns: 1fr; }
     .title { font-size: 22px; }
+    .qr-wrap { flex-direction: column; align-items: center; }
   }
 </style>
 </head>
@@ -548,8 +568,16 @@
         📱 Scan to enter Phil Index Quiz
         <span class="zh">微信扫码直达 Phil 指数测试</span>
       </p>
-      <!-- 部署后替换 data= 后的链接即可生成二维码 -->
-      <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&ecc=M&data=https://你的网页地址/?page=quiz" alt="Phil Index QR Code">
+      <div class="qr-wrap">
+        <div class="qr-item">
+          <img src="cat-qr.png" alt="Cat style QR code">
+          <div class="qr-label">猫猫美化版</div>
+        </div>
+        <div class="qr-item">
+          <img src="standard-qr.png" alt="Standard QR code">
+          <div class="qr-label">标准备用码</div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1306,7 +1334,7 @@ const quiz = {
         <div class="rank-list" id="rankList">
           ${this.renderRankList()}
         </div>
-        <button class="clear-rank-btn" onclick="quiz.clearRank()">Clear ranking (for teacher) · 清空排行榜（老师用）</button>
+        <button class="clear-rank-btn" onclick="quiz.clearRank()">🗑️ 一键清空排行榜（老师用）</button>
       </div>
     `;
   },
@@ -1341,7 +1369,7 @@ const quiz = {
   },
 
   clearRank() {
-    if (confirm("Clear ranking? · 确定清空排行榜吗？")) {
+    if (confirm("Clear all rankings? · 确定清空全部排行榜吗？")) {
       localStorage.removeItem("phil_rank_list");
       document.getElementById("rankList").innerHTML = '<div style="color:#94a3b8;text-align:center;padding:10px">Cleared · 已清空</div>';
     }
