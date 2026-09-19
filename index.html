@@ -1,0 +1,1355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Phil Work & Life Interactive Classroom</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    min-height: 100vh;
+    font-family: "Segoe UI", Roboto, "Microsoft YaHei", sans-serif;
+    color: #f1f5f9;
+    background:
+      linear-gradient(rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.9)),
+      url("https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&w=1600&q=80") center/cover no-repeat;
+    padding: 24px 16px;
+  }
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+  }
+  .nav-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  .home-btn {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: #f1f5f9;
+    padding: 8px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  .home-btn:hover { background: rgba(255,255,255,0.18); }
+  .title {
+    text-align: center;
+    font-size: 28px;
+    margin-bottom: 6px;
+  }
+  .title .zh {
+    font-size: 22px;
+    color: #cbd5e1;
+    display: block;
+    margin-top: 4px;
+    font-weight: 500;
+  }
+  .subtitle {
+    text-align: center;
+    color: #94a3b8;
+    margin-bottom: 30px;
+    font-size: 15px;
+  }
+  .subtitle .zh {
+    font-size: 14px;
+    display: block;
+    margin-top: 2px;
+  }
+
+  /* 首页卡片 */
+  .home-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  .home-card {
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: 18px;
+    padding: 36px 24px;
+    cursor: pointer;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+    text-align: center;
+  }
+  .home-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(59, 130, 246, 0.5);
+  }
+  .home-card .icon { font-size: 44px; margin-bottom: 14px; }
+  .home-card h3 { font-size: 20px; margin-bottom: 6px; }
+  .home-card h3 .zh {
+    font-size: 17px;
+    color: #cbd5e1;
+    display: block;
+    margin-top: 4px;
+    font-weight: 500;
+  }
+
+  /* 页面切换 */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* 游戏页面样式 */
+  .game-card {
+    width: 100%;
+    background: rgba(15, 23, 42, 0.82);
+    backdrop-filter: blur(14px);
+    border-radius: 22px;
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
+    padding: 28px;
+    position: relative;
+    overflow: hidden;
+  }
+  .game-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at top right, rgba(59, 130, 246, 0.18), transparent 45%),
+                radial-gradient(circle at bottom left, rgba(249, 115, 22, 0.12), transparent 40%);
+    pointer-events: none;
+  }
+  .act-badge {
+    background: rgba(59, 130, 246, 0.22);
+    color: #93c5fd;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 700;
+    display: inline-block;
+    margin-bottom: 16px;
+  }
+  .stats-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+    margin-bottom: 22px;
+    position: relative;
+    z-index: 2;
+  }
+  .stat-item { position: relative; }
+  .stat-label {
+    font-size: 14px;
+    color: #cbd5e1;
+    margin-bottom: 6px;
+    line-height: 1.4;
+  }
+  .stat-label .zh { font-size: 13px; color: #94a3b8; display: block; margin-top: 2px; }
+  .stat-bar {
+    height: 14px;
+    background: rgba(30, 41, 59, 0.9);
+    border-radius: 999px;
+    overflow: hidden;
+    border: 1px solid rgba(148,163,184,0.15);
+  }
+  .stat-fill {
+    height: 100%;
+    border-radius: 999px;
+    transition: width 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+  }
+  .career .stat-fill { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+  .health .stat-fill { background: linear-gradient(90deg, #22c55e, #4ade80); }
+  .family .stat-fill { background: linear-gradient(90deg, #f97316, #fb923c); }
+  .stat-number {
+    font-size: 14px;
+    color: #e2e8f0;
+    text-align: right;
+    margin-top: 6px;
+    font-weight: 700;
+    transition: transform 0.3s ease;
+  }
+  .stat-number.bump { transform: scale(1.3); text-shadow: 0 0 8px currentColor; }
+  .float-tip {
+    position: absolute;
+    top: -22px;
+    right: 0;
+    font-size: 18px;
+    font-weight: 800;
+    animation: floatBlast 1.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    pointer-events: none;
+    text-shadow: 0 0 10px currentColor, 0 2px 4px rgba(0,0,0,0.8);
+    z-index: 5;
+  }
+  .float-tip.positive { color: #4ade80; }
+  .float-tip.negative { color: #f87171; }
+  @keyframes floatBlast {
+    0% { opacity: 0; transform: translateY(10px) scale(0.5); }
+    30% { opacity: 1; transform: translateY(-5px) scale(1.2); }
+    100% { opacity: 0; transform: translateY(-35px) scale(1); }
+  }
+  .story-text {
+    font-size: 17px;
+    line-height: 1.75;
+    margin-bottom: 22px;
+    color: #f1f5f9;
+    min-height: 160px;
+    animation: fadeIn 0.6s ease;
+    position: relative;
+    z-index: 2;
+  }
+  .story-text .zh { font-size: 16px; color: #cbd5e1; margin-top: 4px; margin-bottom: 10px; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  .choices-box {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    position: relative;
+    z-index: 2;
+  }
+  .choice-btn {
+    background: linear-gradient(90deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04));
+    border: 1px solid rgba(255,255,255,0.12);
+    color: #f8fafc;
+    padding: 14px 16px;
+    border-radius: 14px;
+    font-size: 16px;
+    text-align: left;
+    cursor: pointer;
+    line-height: 1.5;
+    transition: transform 0.2s ease, background 0.2s ease;
+  }
+  .choice-btn:hover { transform: translateY(-3px); background: rgba(255,255,255,0.12); }
+  .choice-btn .zh { font-size: 14px; color: #e2e8f0; display: block; margin-top: 4px; font-weight: 400; }
+  .choice-work { border-left: 4px solid #ef4444; }
+  .choice-balance { border-left: 4px solid #3b82f6; }
+  .choice-family { border-left: 4px solid #22c55e; }
+  .next-btn {
+    margin-top: 18px;
+    background: linear-gradient(90deg, #3b82f6, #2563eb);
+    border: none;
+    color: white;
+    padding: 14px;
+    border-radius: 14px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    animation: popIn 0.4s ease;
+    position: relative;
+    z-index: 2;
+    width: 100%;
+  }
+  @keyframes popIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .result-stage { margin-bottom: 20px; position: relative; z-index: 2; }
+  .reaction-box {
+    background: rgba(15, 23, 42, 0.72);
+    border-left: 4px solid;
+    padding: 12px 14px;
+    border-radius: 12px;
+    margin-bottom: 12px;
+    font-size: 15px;
+    line-height: 1.6;
+    animation: slideIn 0.5s ease;
+  }
+  .reaction-box .zh { font-size: 14px; color: #cbd5e1; margin-top: 4px; }
+  .reaction-box.boss { border-color: #3b82f6; color: #bfdbfe; }
+  .reaction-box.family { border-color: #f97316; color: #fed7aa; }
+  @keyframes slideIn { from { opacity: 0; transform: translateX(-18px); } to { opacity: 1; transform: translateX(0); } }
+  .twist-banner {
+    background: linear-gradient(90deg, rgba(124, 58, 237, 0.22), rgba(168, 85, 247, 0.22));
+    border: 1px solid rgba(168, 85, 247, 0.45);
+    color: #e9d5ff;
+    padding: 12px 14px;
+    border-radius: 12px;
+    margin-bottom: 14px;
+    font-weight: 700;
+    animation: twistDrop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .twist-banner .zh { font-size: 14px; font-weight: 400; display: block; margin-top: 4px; color: #ddd6fe; }
+  @keyframes twistDrop {
+    from { opacity: 0; transform: translateY(-18px) scale(0.85); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .ending-title {
+    font-size: 30px;
+    font-weight: 800;
+    margin-bottom: 8px;
+    text-align: center;
+    animation: popIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    z-index: 2;
+  }
+  .ending-title .zh { font-size: 20px; font-weight: 500; display: block; margin-top: 6px; }
+  .ending-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin: 20px 0;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 700;
+    position: relative;
+    z-index: 2;
+  }
+  .journey-list {
+    background: rgba(15, 23, 42, 0.72);
+    border: 1px solid rgba(148,163,184,0.15);
+    padding: 14px 16px;
+    border-radius: 14px;
+    margin-top: 16px;
+    font-size: 14px;
+    line-height: 1.7;
+    color: #cbd5e1;
+    position: relative;
+    z-index: 2;
+  }
+  .restart-btn {
+    margin-top: 24px;
+    width: 100%;
+    padding: 14px;
+    background: #475569;
+    color: white;
+    border: none;
+    border-radius: 14px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    position: relative;
+    z-index: 2;
+  }
+  .restart-btn:hover { background: #64748b; transform: translateY(-2px); }
+  .card-shake { animation: cardShake 0.4s ease; }
+  @keyframes cardShake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-6px); }
+    40% { transform: translateX(6px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
+  }
+
+  /* 问卷样式 */
+  .quiz-card {
+    background: rgba(15, 23, 42, 0.82);
+    backdrop-filter: blur(14px);
+    border-radius: 22px;
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    padding: 32px 28px;
+  }
+  .quiz-progress {
+    color: #94a3b8;
+    font-size: 14px;
+    margin-bottom: 16px;
+  }
+  .quiz-question {
+    font-size: 20px;
+    margin-bottom: 24px;
+    line-height: 1.6;
+  }
+  .quiz-question .zh {
+    font-size: 17px;
+    color: #cbd5e1;
+    display: block;
+    margin-top: 6px;
+    font-weight: 500;
+  }
+  .quiz-options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .quiz-option {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: #f1f5f9;
+    padding: 14px 18px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 16px;
+    text-align: left;
+    transition: all 0.2s ease;
+    line-height: 1.5;
+  }
+  .quiz-option:hover {
+    background: rgba(59, 130, 246, 0.15);
+    border-color: rgba(59, 130, 246, 0.5);
+    transform: translateX(4px);
+  }
+  .quiz-option .zh {
+    font-size: 14px;
+    color: #cbd5e1;
+    display: block;
+    margin-top: 4px;
+  }
+  .result-card {
+    text-align: center;
+    padding: 20px 0;
+  }
+  .result-score {
+    font-size: 48px;
+    font-weight: 800;
+    color: #fbbf24;
+    margin: 10px 0;
+  }
+  .result-title {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+  .result-title .zh {
+    font-size: 19px;
+    color: #cbd5e1;
+    display: block;
+    margin-top: 4px;
+    font-weight: 500;
+  }
+  .result-desc {
+    color: #cbd5e1;
+    line-height: 1.7;
+    margin-bottom: 20px;
+    text-align: left;
+  }
+  .result-desc .zh {
+    font-size: 15px;
+    color: #94a3b8;
+    display: block;
+    margin-top: 4px;
+  }
+  .name-input {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.2);
+    background: rgba(0,0,0,0.2);
+    color: white;
+    font-size: 15px;
+    margin-bottom: 12px;
+  }
+  .name-input::placeholder { color: #94a3b8; }
+  .rank-btn {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(90deg, #f59e0b, #d97706);
+    border: none;
+    color: white;
+    border-radius: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-bottom: 24px;
+    font-size: 15px;
+  }
+  .rank-btn:hover { filter: brightness(1.1); }
+  .rank-list-title {
+    text-align: left;
+    margin-bottom: 8px;
+    font-weight: 700;
+    font-size: 15px;
+  }
+  .rank-list-title .zh {
+    font-size: 14px;
+    color: #94a3b8;
+    font-weight: 500;
+    display: block;
+    margin-top: 2px;
+  }
+  .rank-list {
+    background: rgba(0,0,0,0.2);
+    border-radius: 12px;
+    padding: 14px 16px;
+    text-align: left;
+  }
+  .rank-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    font-size: 15px;
+  }
+  .rank-item:last-child { border-bottom: none; }
+  .rank-item .top3 { color: #fbbf24; font-weight: 700; }
+  .clear-rank-btn {
+    margin-top: 12px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: #94a3b8;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+  }
+
+  /* 二维码入口 */
+  .qr-entry {
+    text-align: center;
+    margin-top: 30px;
+    padding: 20px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 16px;
+  }
+  .qr-entry p {
+    font-weight: 700;
+    margin-bottom: 6px;
+    font-size: 15px;
+  }
+  .qr-entry p .zh {
+    font-size: 14px;
+    color: #cbd5e1;
+    font-weight: 500;
+    display: block;
+    margin-top: 2px;
+  }
+  .qr-entry img {
+    width: 180px;
+    border-radius: 12px;
+    margin: 10px 0;
+    background: white;
+    padding: 8px;
+  }
+
+  @media (max-width: 640px) {
+    .home-cards { grid-template-columns: 1fr; }
+    .stats-container { grid-template-columns: 1fr; }
+    .title { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <!-- 顶部导航 -->
+  <div class="nav-bar">
+    <button class="home-btn" onclick="showPage('home')">← Home / 返回首页</button>
+    <span></span>
+  </div>
+
+  <!-- 首页 -->
+  <div id="page-home" class="page active">
+    <h1 class="title">
+      ⚖️ Phil Work & Life Interactive Classroom
+      <span class="zh">Phil 工作与人生互动课堂</span>
+    </h1>
+    <p class="subtitle">
+      Based on text *The Company Man* · Two interactive modules
+      <span class="zh">配套课文《The Company Man》· 两个互动模块任选</span>
+    </p>
+
+    <div class="home-cards">
+      <div class="home-card" onclick="showPage('game')">
+        <div class="icon">🎮</div>
+        <h3>
+          Phil Life Choice Game
+          <span class="zh">Phil 人生抉择游戏</span>
+        </h3>
+      </div>
+      <div class="home-card" onclick="showPage('quiz')">
+        <div class="icon">📝</div>
+        <h3>
+          Phil Index Quiz
+          <span class="zh">Phil 指数小测试</span>
+        </h3>
+      </div>
+    </div>
+
+    <div class="qr-entry">
+      <p>
+        📱 Scan to enter Phil Index Quiz
+        <span class="zh">微信扫码直达 Phil 指数测试</span>
+      </p>
+      <!-- 部署后替换 data= 后的链接即可生成二维码 -->
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&ecc=M&data=https://你的网页地址/?page=quiz" alt="Phil Index QR Code">
+    </div>
+  </div>
+
+  <!-- 游戏页 -->
+  <div id="page-game" class="page">
+    <div class="game-card" id="gameCard">
+      <div class="act-badge" id="actBadge">ACT 1 / 4 · 第一幕</div>
+
+      <div class="stats-container">
+        <div class="stat-item career" id="stat-career">
+          <span class="stat-label">💼 Career Status<span class="zh">事业状态</span></span>
+          <div class="stat-bar"><div class="stat-fill" id="bar-career"></div></div>
+          <div class="stat-number" id="num-career">50</div>
+        </div>
+        <div class="stat-item health" id="stat-health">
+          <span class="stat-label">❤️ Health Status<span class="zh">健康状态</span></span>
+          <div class="stat-bar"><div class="stat-fill" id="bar-health"></div></div>
+          <div class="stat-number" id="num-health">42</div>
+        </div>
+        <div class="stat-item family" id="stat-family">
+          <span class="stat-label">🏠 Family Bond<span class="zh">家庭关系</span></span>
+          <div class="stat-bar"><div class="stat-fill" id="bar-family"></div></div>
+          <div class="stat-number" id="num-family">35</div>
+        </div>
+      </div>
+
+      <div id="gameMainStage"></div>
+    </div>
+  </div>
+
+  <!-- 问卷页 -->
+  <div id="page-quiz" class="page">
+    <div class="quiz-card">
+      <div id="quizContent">
+        <!-- 动态渲染题目 -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ========== 页面切换 ==========
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  if (id === 'game') game.init();
+  if (id === 'quiz') quiz.init();
+  
+  const url = new URL(window.location);
+  url.searchParams.set('page', id);
+  window.history.replaceState({}, '', url);
+}
+
+window.addEventListener('load', () => {
+  const params = new URLSearchParams(window.location.search);
+  const page = params.get('page');
+  if (page === 'quiz' || page === 'game') {
+    showPage(page);
+  }
+});
+
+// ========== 游戏模块 ==========
+const game = {
+  stats: { career: 50, health: 42, family: 35 },
+  currentScene: "start",
+  journey: [],
+  waitingForNext: false,
+  pendingNext: null,
+
+  scenes: {
+    start: {
+      act: 1,
+      text: {
+        en: `You are Phil, 51, a vice-president and classic Type A workaholic.
+20 pounds overweight, high blood pressure, heart already murmuring.
+You live on egg salad sandwiches at your desk. No real hobbies, no real rest.
+
+It's 10 PM Friday. Boss texts: urgent merger project due Sunday. This is your shot at president.
+What do you do?`,
+        zh: `你是菲尔，51岁，公司副总裁，典型的A型人格工作狂。
+超重20磅，高血压，心脏早已出现早搏。
+办公桌前永远是鸡蛋沙拉三明治，没有真正的爱好，也没有真正的休息。
+
+周五晚10点，老板发来短信：紧急并购项目周日必须交付。这是你冲击总裁之位的关键机会。
+你怎么做？`
+      },
+      choices: [
+        {
+          text: { en: "🔥 Pull all-nighters. Nail the promotion. Risk it.", zh: "通宵加班。拿下晋升。赌一把。" },
+          next: "overtime_son",
+          effect: { career: +15, health: -18, family: -10 },
+          class: "choice-work",
+          twistChance: 0.4,
+          twist: {
+            effect: { career: -8, health: -10, family: 0 },
+            text: { en: "⚠️ UNEXPECTED: Project data leaked. Boss blames you.", zh: "⚠️ 意外反转：项目数据泄露，老板问责到你头上。" }
+          },
+          reaction: {
+            boss: [
+              { en: '👔 Boss: "This is exactly the dedication we need."', zh: '老板：「要的就是这种拼劲。你进候选名单了。」' },
+              { en: '👔 Boss: "Stay here until it\'s done. I\'ll tell the board."', zh: '老板：「干完再走。我去跟董事会说。」' }
+            ],
+            family: [
+              { en: '🏠 Helen: She sighed and went to bed alone.', zh: '海伦：她叹了口气，独自上床睡了。' },
+              { en: '🏠 Helen: "Call me when you\'re done."', zh: '海伦：「完事了给我打电话。」' }
+            ]
+          }
+        },
+        {
+          text: { en: "🏠 Go home. Your family hasn't seen you all week.", zh: "回家。家人一整周都没见过你了。" },
+          next: "home_penalty",
+          effect: { career: -15, health: +8, family: +18 },
+          class: "choice-family",
+          twistChance: 0.4,
+          twist: {
+            effect: { career: 0, health: -8, family: -5 },
+            text: { en: "⚠️ UNEXPECTED: Mortgage rate spikes. Bills pile up.", zh: "⚠️ 意外反转：房贷利率暴涨，家庭经济压力陡增。" }
+          },
+          reaction: {
+            boss: [
+              { en: '👔 Boss: "Not very committed, are we?"', zh: '老板：「积极性好像不太够啊。」' },
+              { en: '👔 Boss: "I need people who show up when it matters."', zh: '老板：「关键时刻我要的是能顶上去的人。」' }
+            ],
+            family: [
+              { en: '🏠 Helen: She looked surprised... and relieved.', zh: '海伦：她愣了一下，然后松了口气。' },
+              { en: '🏠 Son: "Dad, will you stay tonight?"', zh: '儿子：「爸，你今晚能不走吗？」' }
+            ]
+          }
+        }
+      ]
+    },
+    overtime_son: {
+      act: 2,
+      text: {
+        en: `You camp at the office all weekend. Coffee, egg salad, no sleep.
+Sunday 2 AM, your youngest son waits in the parking lot — he got in trouble, needs to talk.
+Your report is still half-finished. Deadline is 9 AM.`,
+        zh: `你整个周末扎在办公室。咖啡、鸡蛋沙拉、几乎没睡。
+周日凌晨两点，小儿子在停车场等你——他闯了祸，想和你谈谈。
+报告才写了一半，早上九点必须交。`
+      },
+      choices: [
+        {
+          text: { en: "💻 Keep working. He can figure it out himself.", zh: "继续干活。他自己能解决。" },
+          next: "work_chest_pain",
+          effect: { career: +10, health: -15, family: -20 },
+          class: "choice-work",
+          reaction: {
+            boss: [
+              { en: '👔 Boss: "Reliable. I can count on you."', zh: '老板：「靠谱。这事交给你我放心。」' },
+              { en: '👔 Boss: "Finish it. Don\'t leave early."', zh: '老板：「干完，别早退。」' }
+            ],
+            family: [
+              { en: '🏠 Son: He left without saying a word.', zh: '儿子：他什么也没说，转身就走了。' },
+              { en: '🏠 Son: "Forget it. I\'ll handle it myself."', zh: '儿子：「算了，我自己来。」' }
+            ]
+          }
+        },
+        {
+          text: { en: "🧒 Close the laptop. Drive him home.", zh: "合上电脑。开车送他回家。" },
+          next: "work_rival",
+          effect: { career: -10, health: +5, family: +22 },
+          class: "choice-family",
+          twistChance: 0.3,
+          twist: {
+            effect: { career: +12, health: 0, family: -8 },
+            text: { en: "⚠️ UNEXPECTED: Your rival messed up. Boss calls you back.", zh: "⚠️ 意外反转：对手搞砸了项目，老板连夜请你回去救场。" }
+          },
+          reaction: {
+            boss: [
+              { en: '👔 Boss: "Your rival stayed all night."', zh: '老板：「你的对手熬了一整晚。」' },
+              { en: '👔 Boss: "I need results, not excuses."', zh: '老板：「我要结果，不要借口。」' }
+            ],
+            family: [
+              { en: '🏠 Son: He finally told you what happened.', zh: '儿子：他终于愿意和你说心里话了。' },
+              { en: '🏠 Son: "I thought you wouldn\'t come."', zh: '儿子：「我以为你不会来。」' }
+            ]
+          }
+        }
+      ]
+    },
+    work_chest_pain: {
+      act: 3,
+      text: {
+        en: `You finish the report. Your chest burns. Your left arm goes numb for ten seconds.
+Doctor says: stop now, or you won't see 52.
+Your rival already volunteered to lead the next big project.`,
+        zh: `你写完了报告。胸口一阵灼痛，左臂麻木了整整十秒。
+医生说：现在就停，否则你活不到52岁。
+你的对手已经主动请缨拿下一个大项目。`
+      },
+      choices: [
+        {
+          text: { en: "⚡ Push harder. I didn't come this far to quit.", zh: "再加把劲。都走到这了，不能退。" },
+          next: "tragic_end",
+          effect: { career: +12, health: -30, family: -12 },
+          class: "choice-work",
+          twistChance: 0.3,
+          twist: {
+            effect: { career: -20, health: -10, family: 0 },
+            text: { en: "⚠️ UNEXPECTED: HQ hires an outsider as president.", zh: "⚠️ 意外反转：总部空降外人当总裁，你白忙一场。" }
+          },
+          reaction: {
+            boss: [
+              { en: '👔 Boss: "You\'re my pick for president."', zh: '老板：「总裁之位，我属意你。」' },
+              { en: '👔 Boss: "One more push. Don\'t break now."', zh: '老板：「再撑一下，别现在倒下。」' }
+            ],
+            family: [
+              { en: '🏠 Family: They didn\'t even call anymore.', zh: '家人：他们已经不会再打电话来了。' },
+              { en: '🏠 Helen: "You\'re killing yourself for a title."', zh: '海伦：「你在为一个头衔玩命。」' }
+            ]
+          }
+        },
+        {
+          text: { en: "🩺 Step back. This is killing me.", zh: "退一步。这是在玩命。" },
+          next: "struggle_end",
+          effect: { career: -18, health: +20, family: +12 },
+          class: "choice-balance",
+          reaction: {
+            boss: [
+              { en: '👔 Boss: "Disappointing. I expected more."', zh: '老板：「很失望。我以为你不止于此。」' },
+              { en: '👔 Boss: "The company doesn\'t reward quitters."', zh: '老板：「公司不奖励退缩的人。」' }
+            ],
+            family: [
+              { en: '🏠 Helen: "It\'s about time you came home."', zh: '海伦：「你总算知道回家了。」' },
+              { en: '🏠 Helen: "I\'d rather have you alive than promoted."', zh: '海伦：「我宁愿你活着，也不要你升职。」' }
+            ]
+          }
+        }
+      ]
+    },
+    work_rival: {
+      act: 3,
+      text: {
+        en: `You take your son home. He finally opens up to you. It feels like something real.
+Monday: boss gives the promotion to your rival — "you're just not committed enough."
+You can fight for it, or let it go.`,
+        zh: `你把儿子送回了家。他终于对你敞开心扉，那种感觉很真实。
+周一：老板把晋升机会给了你的对手——「你就是不够投入。」
+你可以争回来，也可以就此放手。`
+      },
+      choices: [
+        {
+          text: { en: "🔥 Fight back. Work 70-hour weeks to prove them wrong.", zh: "赢回来。每周70小时，证明他们错了。" },
+          next: "lonely_end",
+          effect: { career: +20, health: -22, family: -18 },
+          class: "choice-work",
+          reaction: {
+            boss: [
+              { en: '👔 Boss: "Now that\'s the fire I want."', zh: '老板：「这才是我要的干劲。」' },
+              { en: '👔 Boss: "Show them what you\'re made of."', zh: '老板：「让他们看看你的本事。」' }
+            ],
+            family: [
+              { en: '🏠 Son: "Never mind. Forget I said anything."', zh: '儿子：「算了，就当我没说。」' },
+              { en: '🏠 Helen: "I don\'t know who you are anymore."', zh: '海伦：「我都快不认识你了。」' }
+            ]
+          }
+        },
+        {
+          text: { en: "🧘 Let it go. This isn't worth losing my son.", zh: "算了。不能丢了儿子。" },
+          next: "balanced_end",
+          effect: { career: -20, health: +18, family: +20 },
+          class: "choice-family",
+          twistChance: 0.3,
+          twist: {
+            effect: { career: +10, health: 0, family: 0 },
+            text: { en: "⚠️ UNEXPECTED: Your rival quits. The job is yours anyway.", zh: "⚠️ 意外反转：对手离职了，职位最后还是你的。" }
+          },
+          reaction: {
+            boss: [
+              { en: '👔 Boss: "You\'ve peaked. Good luck."', zh: '老板：「你也就这样了。好自为之。」' },
+              { en: '👔 Boss: "You gave up too easily."', zh: '老板：「你放弃得太轻易了。」' }
+            ],
+            family: [
+              { en: '🏠 Son: He started saying goodnight again.', zh: '儿子：他又开始和你说晚安了。' },
+              { en: '🏠 Helen: "Thank you for staying."', zh: '海伦：「谢谢你留下来。」' }
+            ]
+          }
+        }
+      ]
+    },
+    home_penalty: {
+      act: 2,
+      text: {
+        en: `You go home. Helen cries. Your son actually says goodnight.
+Monday morning: boss demotes you off the executive track.
+Pay cut 25%. College tuition, mortgage, car loans — they don't go away.`,
+        zh: `你回了家。海伦红了眼眶。儿子居然和你说了晚安。
+周一早上：老板把你调出了高管晋升通道。
+降薪25%。大学学费、房贷、车贷，一分都不会少。`
+      },
+      choices: [
+        {
+          text: { en: "💼 Go back to overtime. Earn the money back.", zh: "回去加班。把钱赚回来。" },
+          next: "work_chest_pain",
+          effect: { career: +12, health: -20, family: -18 },
+          class: "choice-work",
+          reaction: {
+            boss: [
+              { en: '👔 Boss: "Glad you came to your senses."', zh: '老板：「想通了就好。」' },
+              { en: '👔 Boss: "Money problems? Work harder."', zh: '老板：「缺钱？那就更努力干。」' }
+            ],
+            family: [
+              { en: '🏠 Helen: "I knew this wouldn\'t last."', zh: '海伦：「我就知道你撑不了多久。」' },
+              { en: '🏠 Son: He didn\'t say goodnight this time.', zh: '儿子这一次没有说晚安。' }
+            ]
+          }
+        },
+        {
+          text: { en: "💰 Accept the cut. Pick up side jobs at night.", zh: "接受降薪。晚上打零工补贴。" },
+          next: "home_money_stress",
+          effect: { career: -20, health: -10, family: +10 },
+          class: "choice-balance",
+          reaction: {
+            boss: [
+              { en: '👔 Boss: "Fine. Middle management for you."', zh: '老板：「行吧。中层管理待着吧。」' },
+              { en: '👔 Boss: "You\'re no longer on the fast track."', zh: '老板：「你已经不在快车道上了。」' }
+            ],
+            family: [
+              { en: '🏠 Helen: "At least you\'re here. Sort of."', zh: '海伦：「至少你人在…吧。」' },
+              { en: '🏠 Son: "Dad, are we poor now?"', zh: '儿子：「爸，我们现在很穷吗？」' }
+            ]
+          }
+        }
+      ]
+    },
+    home_money_stress: {
+      act: 3,
+      text: {
+        en: `You work nights and weekends fixing people's yards.
+You're tired all the time. Bills get paid, but you're never home.
+Helen says it's like you never left the office anyway.`,
+        zh: `你晚上和周末去帮人打理庭院打零工。
+永远疲惫不堪。账单是还上了，但你还是永远不在家。
+海伦说，和你以前天天加班也没什么区别。`
+      },
+      choices: [
+        {
+          text: { en: "💸 Keep grinding. Money doesn't grow on trees.", zh: "接着干。钱不会从天上掉下来。" },
+          next: "struggle_end",
+          effect: { career: +5, health: -18, family: -10 },
+          class: "choice-work",
+          reaction: {
+            boss: [
+              { en: '👔 Boss: He barely remembers your name.', zh: '老板：他已经快记不清你是谁了。' },
+              { en: '👔 Boss: "Still here? Good."', zh: '老板：「还在啊？挺好。」' }
+            ],
+            family: [
+              { en: '🏠 Family: Dinner is always cold when you get home.', zh: '家人：你到家时，饭菜永远是凉的。' },
+              { en: '🏠 Helen: "You\'re tired even when you\'re home."', zh: '海伦：「你就算在家也很累。」' }
+            ]
+          }
+        },
+        {
+          text: { en: "🏡 Sell the house. Downsize. Live smaller.", zh: "卖掉房子。换小的。过简朴点。" },
+          next: "balanced_end",
+          effect: { career: -15, health: +15, family: +18 },
+          class: "choice-family",
+          twistChance: 0.3,
+          twist: {
+            effect: { career: 0, health: -5, family: +10 },
+            text: { en: "⚠️ UNEXPECTED: Kids hate the new house. Family fights.", zh: "⚠️ 意外反转：孩子不喜欢新房子，家里矛盾变多。" }
+          },
+          reaction: {
+            boss: [
+              { en: '👔 Boss: "Quitting on your career? Shame."', zh: '老板：「事业说放就放，可惜了。」' },
+              { en: '👔 Boss: "You\'re choosing comfort over ambition."', zh: '老板：「你在选安逸，而不是野心。」' }
+            ],
+            family: [
+              { en: '🏠 Helen: "We\'ll be okay. We have each other."', zh: '海伦：「我们会好的。我们还有彼此。」' },
+              { en: '🏠 Son: "I don\'t care about the house. I just want you here."', zh: '儿子：「我不在乎房子，我只要你在。」' }
+            ]
+          }
+        }
+      ]
+    },
+    tragic_end: {
+      act: 4,
+      title: { en: "💀 The Original Tragedy", zh: "原版悲剧" },
+      text: {
+        en: `You die of coronary thrombosis at 3:00 AM Sunday morning — on your day off.
+
+The obituary calls it a heart attack.
+By 5 PM the day of your funeral, the company is already interviewing your replacement.
+
+Helen already missed you years ago. Your children barely knew you.
+This is exactly the story from the text.`,
+        zh: `周日凌晨三点，你死于冠状动脉血栓——那天本该是你的休息日。
+
+讣告只写了“心脏病发作”。
+葬礼当天下午五点，公司已经开始面试你的继任者。
+
+海伦早在很多年前就已经失去你了。孩子们几乎从不了解你。
+这，就是课文里的故事。`
+      },
+      type: "ending-tragedy",
+      final: { career: 87, health: 0, family: 8 }
+    },
+    lonely_end: {
+      act: 4,
+      title: { en: "🏆 The Lonely Winner", zh: "孤独赢家" },
+      text: {
+        en: `You claw your way to president. Power, money, corner office — you have it all.
+
+But your wife files for divorce. Your kids stop calling.
+You live in a big empty house, with nothing but your work.
+
+You won the career. You lost everything else.`,
+        zh: `你一路拼杀坐上了总裁之位。权力、金钱、独立办公室——你应有尽有。
+
+但妻子提交了离婚申请。孩子们再也不打电话来。
+你住在空荡荡的大房子里，只剩下工作陪你。
+
+你赢了事业，输了全部。`
+      },
+      type: "ending-lonely",
+      final: { career: 95, health: 12, family: 5 }
+    },
+    balanced_end: {
+      act: 4,
+      title: { en: "🌿 The Quiet Peace", zh: "平静人生" },
+      text: {
+        en: `You never become president. You make half the money.
+You live in a smaller house, drive an older car.
+
+But you watch your kids graduate. You grow old with Helen.
+You sleep through the night. You laugh at dinner.
+
+You retire healthy, loved, and at peace.`,
+        zh: `你永远没当上总裁，收入只有原来的一半。
+住更小的房子，开更旧的车。
+
+但你看着孩子们毕业，和海伦一起变老。
+夜里能睡整觉，饭桌上有笑声。
+
+你退休时，身体健康，被人爱着，内心安宁。`
+      },
+      type: "ending-balanced",
+      final: { career: 25, health: 73, family: 90 }
+    },
+    struggle_end: {
+      act: 4,
+      title: { en: "⚖️ The Middle Struggle", zh: "中间挣扎" },
+      text: {
+        en: `You slow down before you die — but not enough to be truly happy.
+
+Stuck in middle management. Health is shaky, but you're alive.
+You see your family on holidays, but you missed most of their lives.
+
+It's not a tragedy. It's not a win. It's just… fine.`,
+        zh: `你在垮掉之前放慢了脚步——但还远谈不上幸福。
+
+卡在中层管理不上不下，健康摇摇欲坠，但好歹活着。
+节假日能见到家人，但他们人生的大部分时光你都错过了。
+
+不是悲剧，也不算赢。只是…就那样吧。`
+      },
+      type: "ending-struggle",
+      final: { career: 40, health: 52, family: 45 }
+    }
+  },
+
+  init() {
+    this.journey = [];
+    this.waitingForNext = false;
+    this.pendingNext = null;
+    this.stats = { career: 50, health: 42, family: 35 };
+    this.currentScene = "start";
+    this.updateStats();
+    this.render();
+  },
+
+  updateStats() {
+    ["career", "health", "family"].forEach(key => {
+      const val = Math.max(0, Math.min(100, this.stats[key]));
+      this.stats[key] = val;
+      const bar = document.getElementById(`bar-${key}`);
+      const num = document.getElementById(`num-${key}`);
+      bar.style.width = val + "%";
+      num.textContent = val;
+      num.classList.remove("bump");
+      void num.offsetWidth;
+      num.classList.add("bump");
+    });
+  },
+
+  showFloatTip(stat, value) {
+    const container = document.getElementById(`stat-${stat}`);
+    const tip = document.createElement("div");
+    tip.className = `float-tip ${value > 0 ? "positive" : "negative"}`;
+    const icons = { career: "💼", health: "❤️", family: "🏠" };
+    tip.textContent = `${value > 0 ? "+" : ""}${value} ${icons[stat]}`;
+    container.appendChild(tip);
+    setTimeout(() => tip.remove(), 2000);
+  },
+
+  triggerShake() {
+    const card = document.getElementById("gameCard");
+    card.classList.remove("card-shake");
+    void card.offsetWidth;
+    card.classList.add("card-shake");
+  },
+
+  pickRandom(list) {
+    return list[Math.floor(Math.random() * list.length)];
+  },
+
+  renderResultStage(choice, finalEffect, twist) {
+    const mainStage = document.getElementById("gameMainStage");
+    let twistHtml = "";
+    if (twist) {
+      twistHtml = `<div class="twist-banner">${twist.text.en}<span class="zh">${twist.text.zh}</span></div>`;
+    }
+    const bossReaction = this.pickRandom(choice.reaction.boss);
+    const familyReaction = this.pickRandom(choice.reaction.family);
+    mainStage.innerHTML = `
+      <div class="result-stage">
+        ${twistHtml}
+        <div class="reaction-box boss">${bossReaction.en}<div class="zh">${bossReaction.zh}</div></div>
+        <div class="reaction-box family">${familyReaction.en}<div class="zh">${familyReaction.zh}</div></div>
+      </div>
+    `;
+  },
+
+  render() {
+    const scene = this.scenes[this.currentScene];
+    const mainStage = document.getElementById("gameMainStage");
+
+    if (scene.act) {
+      document.getElementById("actBadge").textContent = `ACT ${scene.act} / 4 · 第${scene.act}幕`;
+    }
+
+    if (scene.type) {
+      this.stats = { ...scene.final };
+      this.updateStats();
+      mainStage.innerHTML = `
+        <div class="${scene.type}">
+          <div class="ending-title">${scene.title.en}<span class="zh">${scene.title.zh}</span></div>
+          ${scene.text.en.split("\n").map(p => p + "<br>").join("")}
+          <div class="zh">${scene.text.zh.split("\n").map(p => p + "<br>").join("")}</div>
+          <div class="ending-stats">
+            <div>💼 ${scene.final.career}</div>
+            <div>❤️ ${scene.final.health}</div>
+            <div>🏠 ${scene.final.family}</div>
+          </div>
+          <div class="journey-list">
+            <strong>🗺️ Your Journey · 你的人生轨迹</strong><br><br>
+            ${this.journey.map((step, i) => `${i + 1}. ${step.en}<span class="zh">${step.zh}</span>`).join("<br>")}
+          </div>
+        </div>
+      `;
+      mainStage.innerHTML += `<button class="restart-btn" onclick="game.init()">↻ Play Again · 重新开始</button>`;
+      return;
+    }
+
+    mainStage.innerHTML = `
+      <div class="story-text">
+        ${scene.text.en.split("\n").map((line, i) => {
+          const zhLines = scene.text.zh.split("\n");
+          return line + `<div class="zh">${zhLines[i] || ""}</div>`;
+        }).join("")}
+      </div>
+      <div class="choices-box" id="choicesBox"></div>
+    `;
+
+    const choicesBox = document.getElementById("choicesBox");
+    scene.choices.forEach(choice => {
+      const btn = document.createElement("button");
+      btn.className = `choice-btn ${choice.class}`;
+      btn.innerHTML = `${choice.text.en}<div class="zh">${choice.text.zh}</div>`;
+      btn.onclick = () => {
+        if (this.waitingForNext) return;
+        this.journey.push(choice.text);
+        this.pendingNext = choice.next;
+
+        let finalEffect = { ...choice.effect };
+        let twist = null;
+        if (choice.twistChance && Math.random() < choice.twistChance) {
+          twist = choice.twist;
+          for (const key in twist.effect) {
+            finalEffect[key] = (finalEffect[key] || 0) + twist.effect[key];
+          }
+        }
+
+        for (const [stat, val] of Object.entries(finalEffect)) {
+          this.stats[stat] += val;
+          this.showFloatTip(stat, val);
+        }
+
+        if (finalEffect.health <= -15) this.triggerShake();
+        this.updateStats();
+        this.renderResultStage(choice, finalEffect, twist);
+
+        this.waitingForNext = true;
+        mainStage.innerHTML += `<button class="next-btn" onclick="game.goNext()">See Next · 继续</button>`;
+      };
+      choicesBox.appendChild(btn);
+    });
+  },
+
+  goNext() {
+    if (!this.waitingForNext) return;
+    this.waitingForNext = false;
+    this.currentScene = this.pendingNext;
+    this.pendingNext = null;
+    this.render();
+  }
+};
+
+// ========== 问卷模块（全中英对照） ==========
+const quiz = {
+  currentQ: 0,
+  score: 0,
+  questions: [
+    {
+      q: {
+        en: "On weekends, if your counselor or teacher sends you a message, what do you usually do?",
+        zh: "周末辅导员或老师发来消息，你通常？"
+      },
+      options: [
+        { text: { en: "Reply immediately once I see it, handle it right away", zh: "看到秒回，立刻处理" }, score: 3 },
+        { text: { en: "Reply later when I remember, usually within hours", zh: "想起来再回，一般几小时内" }, score: 2 },
+        { text: { en: "Wait until weekdays. No study/work on weekends", zh: "工作日再说，周末不碰学习/工作" }, score: 1 }
+      ]
+    },
+    {
+      q: {
+        en: "When was the last time you had a meal with friends/family without checking study/work messages?",
+        zh: "上一次和朋友/家人吃饭，全程没刷学习/工作消息是什么时候？"
+      },
+      options: [
+        { text: { en: "I can't remember at all", zh: "完全没印象了" }, score: 3 },
+        { text: { en: "About one or two weeks ago", zh: "大概一两周前" }, score: 2 },
+        { text: { en: "Just a few days ago", zh: "就在最近几天" }, score: 1 }
+      ]
+    },
+    {
+      q: {
+        en: "There's a chance for honor/graduate school bonus, but it requires pulling all-nighters. What would you do?",
+        zh: "有一个评优/保研加分机会，需要连续熬夜赶进度，你会？"
+      },
+      options: [
+        { text: { en: "Go for it directly. All-nighters are no big deal", zh: "直接冲，熬夜算什么" }, score: 3 },
+        { text: { en: "Give it a try, but don't stay up too late. Health matters", zh: "试试但不熬大夜，身体要紧" }, score: 2 },
+        { text: { en: "Forget it. Not worth trading health for grades", zh: "算了，不想拿健康换绩点" }, score: 1 }
+      ]
+    },
+    {
+      q: {
+        en: "A last-minute presentation conflicts with a friend's birthday party. What do you do?",
+        zh: "临时presentation和朋友生日聚会撞了，你会？"
+      },
+      options: [
+        { text: { en: "Skip the party. Presentation comes first", zh: "推掉聚会，presentation优先" }, score: 3 },
+        { text: { en: "Go to the party but bring my laptop with me", zh: "去聚会但随身带电脑" }, score: 2 },
+        { text: { en: "Enjoy the party. Presentation can wait", zh: "专心聚会，presentation往后延" }, score: 1 }
+      ]
+    },
+    {
+      q: {
+        en: "Do you think it's reasonable to burn out your health for grades/internships?",
+        zh: "你觉得「为了绩点/实习透支健康」合理吗？"
+      },
+      options: [
+        { text: { en: "Yes. College is the time to grind", zh: "合理，大学就是要拼" }, score: 3 },
+        { text: { en: "Occasionally is fine, just not long-term", zh: "偶尔可以，别长期就行" }, score: 2 },
+        { text: { en: "Not at all. Health comes first", zh: "完全不合理，身体第一位" }, score: 1 }
+      ]
+    }
+  ],
+
+  init() {
+    this.currentQ = 0;
+    this.score = 0;
+    this.renderQuestion();
+  },
+
+  renderQuestion() {
+    const content = document.getElementById("quizContent");
+    if (this.currentQ >= this.questions.length) {
+      this.renderResult();
+      return;
+    }
+    const q = this.questions[this.currentQ];
+    content.innerHTML = `
+      <div class="quiz-progress">Question ${this.currentQ + 1} / ${this.questions.length} · 第 ${this.currentQ + 1} / ${this.questions.length} 题</div>
+      <div class="quiz-question">
+        ${q.q.en}
+        <div class="zh">${q.q.zh}</div>
+      </div>
+      <div class="quiz-options">
+        ${q.options.map((opt, i) => `
+          <button class="quiz-option" onclick="quiz.answer(${opt.score})">
+            ${String.fromCharCode(65 + i)}. ${opt.text.en}
+            <div class="zh">${opt.text.zh}</div>
+          </button>
+        `).join("")}
+      </div>
+    `;
+  },
+
+  answer(score) {
+    this.score += score;
+    this.currentQ++;
+    this.renderQuestion();
+  },
+
+  renderResult() {
+    const content = document.getElementById("quizContent");
+    let title, desc, emoji;
+    if (this.score >= 12) {
+      emoji = "🥪";
+      title = { en: "Phil Himself", zh: "Phil 本人" };
+      desc = {
+        en: "You are literally Phil from the story! You put studies/internships first, reply to messages instantly, and pull all-nighters easily. You tend to ignore people around you and your own health. Watch out for the classic 'egg salad sandwich' lifestyle.",
+        zh: "你就是课文里的 Phil 本Phil！把学业/实习放在最优先级，习惯秒回消息、熬夜赶due，很容易忽略身边的人和自己的身体。小心天天吃「鸡蛋沙拉三明治」式的生活哦。"
+      };
+    } else if (this.score >= 8) {
+      emoji = "⚖️";
+      title = { en: "Balanced Struggler", zh: "平衡挣扎人" };
+      desc = {
+        en: "You swing between grinding and resting. You want good grades but also want a life, constantly torn between both sides. Pretty much the reality of college students today.",
+        zh: "在卷和躺之间反复横跳，一边想搞成绩一边想过日子，时常在两边拉扯，是当代大学生的真实写照了。"
+      };
+    } else {
+      emoji = "🌿";
+      title = { en: "Life Winner", zh: "生活赢家" };
+      desc = {
+        en: "You set clear boundaries between study and life. You care more about your health and people around you, and never burn yourself out for grades. You have a healthy, grounded mindset.",
+        zh: "你分得清学习和生活的边界，更在意自己的健康和身边的人，不会为了绩点透支自己，属于人间清醒型选手。"
+      };
+    }
+
+    content.innerHTML = `
+      <div class="result-card">
+        <div style="font-size:48px;margin-bottom:10px">${emoji}</div>
+        <div class="result-score">${this.score} pts</div>
+        <div class="result-title">
+          ${title.en}
+          <span class="zh">${title.zh}</span>
+        </div>
+        <div class="result-desc">
+          ${desc.en}
+          <div class="zh">${desc.zh}</div>
+        </div>
+        
+        <input class="name-input" id="rankName" placeholder="Enter your nickname to join ranking · 输入你的昵称，上榜！" maxlength="8" />
+        <button class="rank-btn" onclick="quiz.submitRank()">🏆 Join Class Phil Index Ranking · 加入班级 Phil 指数排行榜</button>
+        
+        <div class="rank-list-title">
+          📊 Class Phil Index Ranking
+          <span class="zh">班级 Phil 指数排行榜</span>
+        </div>
+        <div class="rank-list" id="rankList">
+          ${this.renderRankList()}
+        </div>
+        <button class="clear-rank-btn" onclick="quiz.clearRank()">Clear ranking (for teacher) · 清空排行榜（老师用）</button>
+      </div>
+    `;
+  },
+
+  getRankData() {
+    const data = localStorage.getItem("phil_rank_list");
+    return data ? JSON.parse(data) : [];
+  },
+
+  submitRank() {
+    const nameInput = document.getElementById("rankName");
+    const name = nameInput.value.trim() || "Anonymous";
+    const list = this.getRankData();
+    list.push({ name, score: this.score, time: Date.now() });
+    list.sort((a, b) => b.score - a.score);
+    localStorage.setItem("phil_rank_list", JSON.stringify(list));
+    document.getElementById("rankList").innerHTML = this.renderRankList();
+    nameInput.value = "";
+  },
+
+  renderRankList() {
+    const list = this.getRankData().slice(0, 10);
+    if (list.length === 0) {
+      return '<div style="color:#94a3b8;text-align:center;padding:10px">No data yet. Be the first! · 暂无数据，快来第一个上榜！</div>';
+    }
+    return list.map((item, i) => `
+      <div class="rank-item ${i < 3 ? "top3" : ""}">
+        <span>${i + 1}. ${item.name}</span>
+        <span>${item.score} pts</span>
+      </div>
+    `).join("");
+  },
+
+  clearRank() {
+    if (confirm("Clear ranking? · 确定清空排行榜吗？")) {
+      localStorage.removeItem("phil_rank_list");
+      document.getElementById("rankList").innerHTML = '<div style="color:#94a3b8;text-align:center;padding:10px">Cleared · 已清空</div>';
+    }
+  }
+};
+
+// 默认显示首页
+showPage('home');
+</script>
+</body>
+</html>
